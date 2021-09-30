@@ -1,10 +1,12 @@
 from rest_framework.exceptions import ValidationError
-from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView, RetrieveUpdateDestroyAPIView
+from rest_framework.generics import ListAPIView, CreateAPIView, DestroyAPIView, RetrieveUpdateDestroyAPIView, GenericAPIView 
 from django_filters.rest_framework import DjangoFilterBackend
 from store.serializers import ProductSerializer
 from store.models import Product
 from rest_framework.filters import SearchFilter
 from rest_framework.pagination import LimitOffsetPagination
+from rest_framework.response import Response
+
 
 
 class ProductsPagination(LimitOffsetPagination):
@@ -83,3 +85,19 @@ class ProductRetrieveUpdateDestroyAPIView(RetrieveUpdateDestroyAPIView):
                 'price': product['price'],  
             })
         return response
+
+
+class ProductStats(GenericAPIView):
+    lookup_field = 'id'
+    serializer_class = ProductSerializer
+    queryset = Product.objects.all()
+
+    def get(self, request, format=None, id=None):
+        obj = self.get_object()
+        serializer = ProductSerializer({
+            'stats':{
+                '2019-01-01': [5,10,15],
+                '2019-01-02': [20,1,1],
+            }
+        })
+        return Response(serializer.data)
